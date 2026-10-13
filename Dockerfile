@@ -1,5 +1,5 @@
 # Start with a base image containing Java runtime
-FROM openjdk:17-oracle
+FROM eclipse-temurin:17-jdk
 
 # Add Maintainer Info
 LABEL maintainer="your.email@example.com"
