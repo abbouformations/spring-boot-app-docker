@@ -1,20 +1,27 @@
-# Start with a base image containing Java runtime
-FROM eclipse-temurin:17-jdk
+# Étape 1 : compilation et génération du JAR
+FROM maven:3.9-eclipse-temurin-17 AS build
 
-# Add Maintainer Info
+WORKDIR /app
+
+# Copier les fichiers du projet
+COPY pom.xml .
+COPY src ./src
+
+# Compiler et générer le JAR
+RUN mvn clean package -DskipTests
+
+# Étape 2 : exécution de l'application
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
 LABEL maintainer="your.email@example.com"
 
-# Add a volume pointing to /tmp
-VOLUME /tmp
-
-# Make port 8080 available to the world outside this container
+# Port utilisé par l'application Spring Boot
 EXPOSE 7777
 
-# The application's jar file
-ARG JAR_FILE=target/spring-boot-app.jar
+# Copier le JAR généré à l'étape précédente
+COPY --from=build /app/target/*.jar /app/app.jar
 
-# Add the application's jar to the container
-ADD ${JAR_FILE} app.jar
-
-# Run the jar file
-ENTRYPOINT ["java","-jar","/app.jar"]
+# Démarrer l'application
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
